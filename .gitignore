@@ -1,0 +1,9 @@
+__pycache__
+build
+creditcard.csv
+transactions.db
+venv
+exit
+dist/
+dist/
+dist/
