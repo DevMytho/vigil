@@ -130,12 +130,38 @@ positives; too lenient and real fraud slips through. Worth tuning the
 `contamination` parameter and comparing against a second model (e.g. an
 autoencoder) to see how the tradeoff shifts.
 
+## Desktop app (vigil-desktop/)
+
+A Tauri desktop wrapper that bundles the API as a sidecar binary. The
+Python FastAPI service gets frozen into a standalone executable via
+PyInstaller and run as a Tauri sidecar process. The React frontend talks
+to it over `localhost` like any web app.
+
+```bash
+cd vigil-desktop
+npm install
+npm run tauri dev          # opens the Tauri window with live reload
+```
+
+To produce a platform-native installer:
+```bash
+# Full build: freezes Python API + builds Tauri
+./scripts/build.sh
+
+# Or just rebuild the Tauri app (reuse existing sidecar binary)
+./scripts/build.sh --skip-py
+```
+
+See [`vigil-desktop/README.md`](vigil-desktop/README.md) for full
+details on the desktop app architecture and CI/CD.
+
 ## Project structure
 
 ```
 vigil/
 ├── docker-compose.yml       # Kafka + Zookeeper
 ├── requirements.txt
+├── vigil-api.spec            # PyInstaller spec for sidecar build
 ├── data/
 │   ├── generate_synthetic_data.py
 │   └── creditcard.csv       # generated or downloaded
@@ -148,7 +174,12 @@ vigil/
 ├── streaming/
 │   ├── producer.py           # replays CSV as a live Kafka feed
 │   └── consumer.py           # scores each message via the API, stores results
-└── dashboard/
-    ├── app.py                 # Streamlit live view
-    └── transactions.db        # SQLite result store (created at runtime)
+├── dashboard/
+│   ├── app.py                 # Streamlit live view
+│   └── transactions.db        # SQLite result store (created at runtime)
+└── vigil-desktop/             # Tauri desktop wrapper (separate repo)
+    ├── src/                    # React frontend
+    ├── src-tauri/              # Rust shell + Tauri config
+    ├── scripts/build.sh        # Build automation
+    └── binaries/               # PyInstaller-frozen sidecar
 ```

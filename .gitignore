@@ -1,9 +1,30 @@
-__pycache__
-build
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+dist/
+build/
+*.egg-info/
+
+# Data (large files — generate or download separately)
 creditcard.csv
 transactions.db
-venv
-exit
-dist/
-dist/
-dist/
+
+# Misc
+exit/
+
+# ── Node ───────────────────────────────────────
+node_modules/
+vigil-desktop/node_modules/
+
+# Vite build output
+vigil-desktop/dist/
+
+# Rust / Tauri build artifacts
+vigil-desktop/src-tauri/target/
+vigil-desktop/src-tauri/gen/schemas/
+
+# OS
+.DS_Store
+Thumbs.db
