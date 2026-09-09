@@ -109,21 +109,19 @@ jobs:
         with:
           targets: ${{ matrix.rust_target }}
 
-      - name: Install Tauri CLI
-        run: npm install -D @tauri-apps/cli@latest
-
       - name: Install frontend dependencies
+        working-directory: vigil-desktop
         run: npm install
 
       - name: Download sidecar binary
         uses: actions/download-artifact@v4
         with:
           name: sidecar-${{ matrix.target }}
-          path: src-tauri/binaries/
+          path: vigil-desktop/src-tauri/binaries/
 
       - name: Ensure sidecar is executable
         if: matrix.os != 'windows-latest'
-        run: chmod +x src-tauri/binaries/vigil-api-${{ matrix.target }}
+        run: chmod +x vigil-desktop/src-tauri/binaries/vigil-api-${{ matrix.target }}
 
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-22.04'
@@ -133,6 +131,7 @@ jobs:
             librsvg2-dev patchelf libgtk-3-dev libayatana-appindicator3-dev
 
       - name: Build Tauri app
+        working-directory: vigil-desktop
         run: npx tauri build
         env:
           TAURI_ENV_TARGET_TRIPLE: ${{ matrix.rust_target }}
@@ -142,12 +141,12 @@ jobs:
         with:
           name: app-${{ matrix.target }}
           path: |
-            src-tauri/target/release/bundle/**/*.deb
-            src-tauri/target/release/bundle/**/*.AppImage
-            src-tauri/target/release/bundle/**/*.dmg
-            src-tauri/target/release/bundle/**/*.app.tar.gz
-            src-tauri/target/release/bundle/**/*.msi
-            src-tauri/target/release/bundle/**/*.exe
+            vigil-desktop/src-tauri/target/release/bundle/**/*.deb
+            vigil-desktop/src-tauri/target/release/bundle/**/*.AppImage
+            vigil-desktop/src-tauri/target/release/bundle/**/*.dmg
+            vigil-desktop/src-tauri/target/release/bundle/**/*.app.tar.gz
+            vigil-desktop/src-tauri/target/release/bundle/**/*.msi
+            vigil-desktop/src-tauri/target/release/bundle/**/*.exe
           retention-days: 7
 
   # ── Create GitHub Release ───────────────────────────────────────

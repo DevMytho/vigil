@@ -25,8 +25,15 @@ vigil-desktop/dist/
 vigil-desktop/src-tauri/target/
 vigil-desktop/src-tauri/gen/schemas/
 
+# Sidecar binaries (built by CI)
+vigil-desktop/binaries/
+vigil-desktop/src-tauri/binaries/
+
+# PyInstaller output
+dist/
+build/
+*.spec.bak
+
 # OS
 .DS_Store
 Thumbs.db
-vigil-desktop/binaries/
-vigil-desktop/src-tauri/binaries/
