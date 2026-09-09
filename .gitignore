@@ -28,3 +28,5 @@ vigil-desktop/src-tauri/gen/schemas/
 # OS
 .DS_Store
 Thumbs.db
+vigil-desktop/binaries/
+vigil-desktop/src-tauri/binaries/
