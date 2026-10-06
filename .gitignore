@@ -10,6 +10,7 @@ build/
 # Data (large files — generate or download separately)
 creditcard.csv
 transactions.db
+models/eval_scores.npz
 
 # Misc
 exit/

@@ -13,7 +13,11 @@ What this script does, in order:
   5. Evaluate with precision/recall/F1 on the held-out mixed test set
      (accuracy is meaningless here -- a model that predicts "normal" for
      everything would still score >99% accuracy).
-  6. Save the trained model + the fitted scaler to disk with joblib.
+  6. Report PR-AUC (average precision) over the continuous anomaly score --
+     the threshold-free headline metric for an imbalanced problem like this.
+     A random ranker scores PR-AUC == fraud prevalence, so that baseline is
+     printed next to the model's number.
+  7. Save the trained model + the fitted scaler to disk with joblib.
 
 Run:
     python models/train_model.py
@@ -23,7 +27,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import average_precision_score, classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -96,6 +100,35 @@ def train_and_evaluate(df: pd.DataFrame, model_features: list[str]):
     print(classification_report(y_test, y_pred, target_names=["normal", "fraud"]))
     print("Confusion matrix (rows=true, cols=predicted):")
     print(confusion_matrix(y_test, y_pred))
+
+    # PR-AUC / average precision on the CONTINUOUS anomaly score, not the
+    # binary decision. decision_function: higher = more normal, so negate it
+    # to get "higher = more anomalous", which is what precision_recall_curve
+    # expects for the positive class (fraud).
+    anomaly_scores = -model.decision_function(X_test)
+    pr_auc = average_precision_score(y_test, anomaly_scores)
+    baseline = float(np.mean(y_test))  # a random ranker scores exactly this
+    print("=== PR-AUC (average precision, held-out test set) ===")
+    print(f"PR-AUC:              {pr_auc:.4f}")
+    print(f"Random baseline:     {baseline:.4f} (= fraud prevalence of test set)")
+    print(f"Lift over baseline:  {pr_auc / baseline:.1f}x")
+
+    # Precision@k-style read of the same curve: how much recall we get at the
+    # top-K scores an analyst could realistically review (K = #fraud, 2x, 5x).
+    n_fraud = int(y_test.sum())
+    order = np.argsort(anomaly_scores)[::-1]
+    for k_frac, label in ((1, "K = #fraud"), (2, "K = 2x #fraud"), (5, "K = 5x #fraud")):
+        k = min(n_fraud * k_frac, len(y_test))
+        hits = int(y_test[order[:k]].sum())
+        print(f"Recall at top {label:<12} (K={k:>4}): {hits / n_fraud:.2%} "
+              f"(precision {hits / k:.2%})")
+
+    # Save the score/label pairs + curve for inspection (gitignored).
+    np.savez(
+        "models/eval_scores.npz",
+        y_test=y_test,
+        anomaly_score=anomaly_scores,
+    )
 
     return model
 
